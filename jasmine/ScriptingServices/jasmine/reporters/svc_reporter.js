@@ -6,38 +6,56 @@
 	
 	var response = require("net/http/response");
 	
-	var reporter = {
+	var jsonReporter = {
+	
+		/*
+			Transformation Mapping Rules:
+			
+			testSuite -> suite (.describe)
+			test -> spec (.it)
+			assertions ->  passed/failedExpectaitons (.expect)
+		*/
 	
 		data: {
 			tests: [],
-			testSuite: {}
+			testSuite: {
+				runtime: 0
+			}
 		},
 		
 		jasmineStarted: function(suiteInfo) {
+			this.data.testSuite.runtime = new Date().getTime();
 			this.data.testSuite.total = suiteInfo.totalSpecsDefined;
 		},
-		suiteStarted: function(result) {
+		suiteStarted: function(suite) {
+		},	
+		specStarted: function(spec) {
 			var test = this.data.tests.filter(function(entry){
-				return result.id === entry.id;
+				return spec.id === entry.id;
 			})[0];
 			if(!test){
+				var idx = spec.fullName.indexOf(spec.description);
+				var _module = spec.fullName.slice(0,idx);
 				test = {
-					name: result.description,
+					id: spec.id,
+					name: spec.description,
+					module: _module,
+					runtime: new Date().getTime(),
 					assertions: []
 				};
 				this.data.tests.push(test);
-			}	    	
-		},	
-		specStarted: function(result) {
+			}		
 		},
-		specDone: function(result) {
-			this.data.testSuite.passed = result.status;
+		specDone: function(spec) {
+			if(this.data.testSuite.passed===undefined || this.data.testSuite.passed==='passed')
+				this.data.testSuite.passed = spec.status;
 			var assertions = [];
-			if(result.failedExpectations.length>0){
-				assertions = result.failedExpectations.map(function(assertion){
+			if(spec.failedExpectations.length>0){
+				assertions = spec.failedExpectations.map(function(assertion){
 					return {
-						message: result.description + ' failed on expectation ' + assertion.message,
-						result: result.passed==='passed'? true: false
+						message: spec.description + ' failed on expectation ' + assertion.message,
+						result: spec.passed==='passed'? true: false,
+						stack: assertion.stack
 					};
 				});
 				if(this.data.testSuite.failed === undefined)
@@ -45,17 +63,30 @@
 				else 
 					this.data.testSuite.failed += assertions.length;
 			} else {
-				assertions.push({
-					message: result.description + ' ' + result.status,
-					result: result.status==='passed'? true: false
+				assertions = spec.passedExpectations.map(function(assertion){
+					return {
+						message: spec.description + ' ' + spec.status,
+						result: spec.status==='passed'? true: false
+					};
 				});
 			}
-			this.data.tests[0].assertions = this.data.tests[0].assertions.concat(assertions);
+			var test = this.data.tests.filter(function(entry){
+				return spec.id === entry.id;
+			})[0];
+			if(test){
+				test.assertions = test.assertions.concat(assertions);
+				test.failed = spec.status==='failed'? true: false;
+				test.total = assertions.length;
+				test.runtime = new Date().getTime() - test.runtime;
+			} else {
+				console.error('[Application Error]: Could not locate started test with id['+spec.id+']');
+			}
 		},	
-		suiteDone: function(result) {
+		suiteDone: function(suite) {
 	    	this.data.testSuite.passed = (this.data.testSuite.total - this.data.testSuite.failed);
 		},
 		jasmineDone: function() {
+			this.data.testSuite.runtime = new Date().getTime() - this.data.testSuite.runtime;
 			response.setContentType("application/json; charset=UTF-8");
 			response.setCharacterEncoding("UTF-8");	
 			response.print(JSON.stringify(this.data));
@@ -64,6 +95,6 @@
 		}
 	};
 	
-	exports.jasmine_svc_reporter = reporter;
-
+	exports.jasmine_svc_reporter = jsonReporter;
+	
 })();
