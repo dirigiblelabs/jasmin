@@ -1,5 +1,5 @@
 # jasmine
-Jasmine module for Unit and BDD style testing JavaScript services in Dirigible.
+[Jasmine](https://jasmine.github.io/) module for Unit and BDD style testing JavaScript services in Dirigible.
 
 Usage
 <pre>
