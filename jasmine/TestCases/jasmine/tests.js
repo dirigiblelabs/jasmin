@@ -13,6 +13,7 @@ var $$j = j.interface(jasmine, env);
 $$j.describe("A suite is just a function", function() {
     
     $$j.it("and has a positive case", function() {
+    	
 		$$j.expect(false).toBe(true);
 	});
 	
@@ -23,6 +24,4 @@ $$j.describe("A suite is just a function", function() {
 });
 
 //Service these tests
-var jasmineSvc = require("jasmine/jasmine_svc");
-jasmineSvc.service(env);
-
+require("jasmine/jasmine_test_runner_svc").service(env);

@@ -94,7 +94,11 @@
 			response.close();
 		}
 	};
-	
-	exports.jasmine_svc_reporter = jsonReporter;
+
+	exports.forMedia = function(media){
+		var _env = this.env || require('core/globals').get('JasmineEnv');
+		if(media === 'json')
+			_env.addReporter(jsonReporter);
+	};	
 	
 })();
