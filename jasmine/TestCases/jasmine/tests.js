@@ -6,9 +6,9 @@ var console_reporter = require("jasmine/reporters/console_reporter");
 var jasmine = j.core(j);
 var env = jasmine.getEnv();
 
-env.addReporter(console_reporter.jasmine_console_reporter);
-
 var $$j = j.interface(jasmine, env);
+
+env.addReporter(console_reporter.jasmine_console_reporter);
 
 $$j.describe("A suite is just a function", function() {
     

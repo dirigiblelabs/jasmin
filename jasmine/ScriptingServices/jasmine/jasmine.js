@@ -188,6 +188,12 @@ getJasmineRequireObj().base = function(j$, jasmineGlobal) {
   };
 
   j$.isA_ = function(typeName, value) {
+  	//Fix for Rhino
+  	if(typeName.toLowerCase() === "function"){
+  		return typeof value === 'function';
+  	} else if(typeName.toLowerCase() === "array"){
+  	  	return Array.isArray(value);
+  	}
     return Object.prototype.toString.apply(value) === '[object ' + typeName + ']';
   };
 
@@ -327,7 +333,8 @@ getJasmineRequireObj().util = function() {
   };
 
   util.clone = function(obj) {
-    if (Object.prototype.toString.apply(obj) === '[object Array]') {
+  	//Rhino fix for array check
+    if (Object.prototype.toString.apply(obj) === '[object Array]' || Array.isArray(obj)) {
       return obj.slice();
     }
 
@@ -1584,7 +1591,8 @@ getJasmineRequireObj().Expectation = function() {
           args.unshift(name);
           message = this.util.buildFailureMessage.apply(null, args);
         } else {
-          if (Object.prototype.toString.apply(result.message) === '[object Function]') {
+        	//Rhino fix for functuion type check
+          if (Object.prototype.toString.apply(result.message) === '[object Function]' || typeof result.message === 'function') {
             message = result.message();
           } else {
             message = result.message;
@@ -2825,8 +2833,8 @@ getJasmineRequireObj().matchersUtil = function(j$) {
 
     contains: function(haystack, needle, customTesters) {
       customTesters = customTesters || [];
-
-      if ((Object.prototype.toString.apply(haystack) === '[object Array]') ||
+		//Rhino fix for check for Array
+      if ((Object.prototype.toString.apply(haystack) === '[object Array]') || Array.isArray(haystack) ||
         (!!haystack && !haystack.indexOf))
       {
         for (var i = 0; i < haystack.length; i++) {
@@ -3387,7 +3395,6 @@ getJasmineRequireObj().toHaveBeenCalledWith = function(j$) {
         } else {
           result.message = function() { return 'Expected spy ' + actual.and.identity() + ' to have been called with ' + j$.pp(expectedArgs) + ' but actual calls were ' + j$.pp(actual.calls.allArgs()).replace(/^\[ | \]$/g, '') + '.'; };
         }
-
         return result;
       }
     };

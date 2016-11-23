@@ -52,9 +52,12 @@
 			var assertions = [];
 			if(spec.failedExpectations.length>0){
 				assertions = spec.failedExpectations.map(function(assertion){
+					var message = assertion.message;
+					if(typeof message === 'function')
+						message = assertion.message();
 					return {
-						message: spec.description + ' failed on expectation ' + assertion.message,
-						result: spec.passed==='passed'? true: false,
+						message: message,
+						result: assertion.passed,
 						stack: assertion.stack
 					};
 				});
@@ -65,8 +68,8 @@
 			} else {
 				assertions = spec.passedExpectations.map(function(assertion){
 					return {
-						message: spec.description + ' ' + spec.status,
-						result: spec.status==='passed'? true: false
+						message: spec.description + ' assertion[' + assertion.matcherName + '] ' + assertion.message.toLowerCase(),
+						result: assertion.passed
 					};
 				});
 			}
