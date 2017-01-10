@@ -7,9 +7,9 @@
     },
     "dependencies": [
         {
-            "guid":"core_testui",
+            "guid":"core_test_runner",
             "type": "git",
-            "url": "https://github.com/dirigiblelabs/core_testui.git",
+            "url": "https://github.com/dirigiblelabs/core_test_runner.git",
             "branch":"master"
     	}
 	]
